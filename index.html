@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .back-arrow {
+            font-size: 20px;
+            margin-right: 16px;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .status-bar {
+            position: absolute;
+            top: 8px;
+            right: 16px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .ticket-container {
+            background: white;
+            margin: 0;
+            padding: 24px 20px;
+            border-radius: 0;
+        }
+        
+        .logo-section {
+            text-align: left;
+            margin-bottom: 24px;
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 14px;
+            animation: marquee 6s linear infinite;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @keyframes marquee {
+            0% { 
+                transform: translateX(-100%); 
+            }
+            100% { 
+                transform: translateX(100%); 
+            }
+        }
+        
+        .qr-code {
+            width: 280px;
+            height: 280px;
+            margin: 0 auto 32px auto;
+            background: white;
+            border: 2px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .ticket-info {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .info-row {
+            margin-bottom: 15px;
+        }
+        
+        .info-label {
+            font-size: 14px;
+            color: #999;
+        }
+        
+        .info-value {
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .validity-date {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .ticket-numbers {
+            margin-top: 8px;
+        }
+        
+        .footer-logo {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+        }
+        
+        .footer-logo img {
+            height: 24px;
+            opacity: 0.6;
+        }
+        
+        .footer-text {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="back-arrow"><img src="arrow.png"></div>
+        <div class="header-title">Wróć</div>
+    </div>
+    
+    <div class="ticket-container">
+        <div class="logo-section">
+            <img src="mpk.png">
+        </div>
+        
+        <div class="qr-code" id="qrcode"></div>
+        
+        <div class="ticket-info">
+            <div class="info-row">
+                <div class="info-label">Nazwa:</div>
+                <div class="info-value">Brzesko MPK</div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">Bilet:</div>
+                <div class="info-value">Jedn. dwie strefy lokalny</div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">Nr linii:</div>
+                <div class="info-value">7</div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">Ważny do:</div>
+                <div class="validity-date" id="validityDate">23.05.2025r. 07:34</div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">Numer bieżący:</div>
+                <div class="info-value" id="runningNumber">485872183</div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">Numer kontrolny:</div>
+                <div class="info-value" id="controlNumber">47050</div>
+            </div>
+        </div>
+        
+        <div class="logo-section">
+            <img src="mpk.png">
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">Cena:</div>
+            <div class="info-value" >2.40 PLN</div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">Czas zakupu</div>
+            <div class="info-value" id="purchaseTime"></div>
+        </div>
+    </div>
+    
+    <!-- Include QRCode.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Function to format date
+        function formatDate(date) {
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            
+            return `${day}.${month}.${year}r. ${hours}:${minutes}`;
+        }
+        
+        // Function to generate random number
+        function generateRandomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // Generate QR code and ticket data on page load
+        window.onload = function() {
+            // Current date
+            const now = new Date();
+            
+            // Calculate purchase time (-3 minutes from now)
+            const purchaseTime = new Date(now.getTime() - (3 * 60 * 1000));
+            const formattedPurchaseTime = formatDate(purchaseTime);
+            document.getElementById('purchaseTime').textContent = formattedPurchaseTime;
+            
+            // Calculate valid until time (+30 minutes from purchase time)
+            const validUntil = new Date(purchaseTime.getTime() + (30 * 60 * 1000)); 
+            
+            // Set validity date
+            const validityDate = formatDate(validUntil);
+            document.getElementById('validityDate').textContent = validityDate;
+            
+            // Generate random numbers
+            const runningNumber = generateRandomNumber(100000000, 999999999); // 9-digit
+            const controlNumber = generateRandomNumber(10000, 99999); // 5-digit
+            document.getElementById('runningNumber').textContent = runningNumber;
+            document.getElementById('controlNumber').textContent = controlNumber;
+            
+            // Generate QR code with ticket data
+            const ticketData = JSON.stringify({
+                name: "Brzesko MPK",
+                ticket: "Jedn. dwie strefy lokalny",
+                line: "7",
+                purchaseTime: formattedPurchaseTime,
+                validity: validityDate,
+                runningNumber: runningNumber,
+                controlNumber: controlNumber
+            });
+            
+            new QRCode(document.getElementById("qrcode"), {
+                text: ticketData,
+                width: 280,
+                height: 280,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H // High error correction
+            });
+        };
+    </script>
+</body>
+</html>
