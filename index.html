@@ -107,7 +107,7 @@
         .validity-date {
             font-size: 18px;
             color: #333;
-            font-weight: 600;
+            font-weight: bold;
         }
         
         .ticket-numbers {
@@ -137,7 +137,7 @@
 </head>
 <body>
     <div class="header">
-        <div class="back-arrow"><img src="arrow.png"></div>
+        <div class="back-arrow"><img src="arrow30.png"></div>
         <div class="header-title">Wróć</div>
     </div>
     
@@ -239,13 +239,8 @@
             
             // Generate QR code with ticket data
             const ticketData = JSON.stringify({
-                name: "Brzesko MPK",
-                ticket: "Jedn. dwie strefy lokalny",
-                line: "7",
-                purchaseTime: formattedPurchaseTime,
-                validity: validityDate,
-                runningNumber: runningNumber,
-                controlNumber: controlNumber
+                id: "1234567890",
+                name: "Brzesk",
             });
             
             new QRCode(document.getElementById("qrcode"), {
